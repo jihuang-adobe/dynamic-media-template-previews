@@ -11,11 +11,16 @@ export default async function decorate(block) {
     const pathElement = block.querySelector('a');
 
     if(pathElement) {
+        var finalHTML = '';
         const path = pathElement.textContent;
 
         const jsonConfig  = await loadConfig(path);
 
-        var finalHTML = '';
+        finalHTML += jsx `
+        <div class="alert alert-success mt-5" role="alert">
+        Reading Dynamic Media variables from <a href="${path}">HERE</a>
+        </div>
+        `;
 
         jsonConfig.data.map(function(item){
             var DMLink = '';
@@ -31,17 +36,21 @@ export default async function decorate(block) {
             }
 
             finalHTML += jsx`
-                <picture>
-                    <source type="image/webp" srcset="${DMLink}">
-                    <img class="s7" loading="lazy" alt="..." src="${DMLink}">
-                </picture>
-                <p>${DMLink}</p>
-                <br />
-                <br />
+            <div class="col-4">
+                <div class="card">
+                    <img src="${DMLink + DMLinkParams}" class="card-img-top" alt="">
+                    <div class="card-body">
+                        <input class="form-control" type="text" value="${DMLink + DMLinkParams}" aria-label="readonly input example" readonly>
+                        </br>
+                        <a href="#" onclick="navigator.clipboard.writeText('${DMLink + DMLinkParams}')" class="btn btn-primary">Copy</a>
+                    </div>
+                </div>
+            </div>
             `;
             console.log(item);
         })
 
+        block.classList.add('row', 'gy-3');
         block.innerHTML = finalHTML;
 
         /*
