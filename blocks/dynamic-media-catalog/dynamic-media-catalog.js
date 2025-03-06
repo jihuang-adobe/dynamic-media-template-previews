@@ -1,3 +1,5 @@
+
+
 export function jsx(html, ...args) {
     return html.slice(1).reduce((str, elem, i) => str + args[i] + elem, html[0]);
 }
@@ -22,14 +24,20 @@ export default async function decorate(block) {
         </div>
         `;
 
-        jsonConfig.data.map(function(item){
+        jsonConfig.data.map(function(item, index){
+            var timestamp = index;
             var DMLink = '';
             var DMLinkParams = '';
+            var DMLinkPreviewParams = '';
 
             for (const property in item) {
                 if(property=='$template_url') {
                     DMLink = item[property] + '?';
                 } else {
+                    if(property!='wid') {
+                        DMLinkPreviewParams += `&${property}=${encodeURIComponent(item[property])}`;
+                    }
+
                     DMLinkParams += `&${property}=${encodeURIComponent(item[property])}`;
                 }
                 
@@ -38,7 +46,7 @@ export default async function decorate(block) {
             finalHTML += jsx`
             <div class="col-4">
                 <div class="card">
-                    <img src="${DMLink + DMLinkParams}" class="card-img-top" alt="">
+                    <img src="${DMLink + DMLinkParams}" role="button" data-bs-toggle="modal" data-bs-target="#${timestamp}" alt="">
                     <div class="card-body">
                         <input class="form-control" type="text" value="${DMLink + DMLinkParams}" aria-label="readonly input example" readonly>
                         </br>
@@ -46,21 +54,16 @@ export default async function decorate(block) {
                     </div>
                 </div>
             </div>
+            <div class="modal fade" id="${timestamp}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <img src="${DMLink + DMLinkPreviewParams}" class="mx-auto d-block" alt="" />
+                </div>
+            </div>
             `;
-            console.log(item);
         })
 
         block.classList.add('row', 'gy-3');
         block.innerHTML = finalHTML;
-
-        /*
-        block.innerHTML = jsx`
-            <picture>
-            <source type="image/webp" srcset="${link}?$rfk_medium$">
-            <img class="s7" loading="lazy" alt="..." src="${link}?$rfk_medium$">
-            </picture>
-        `;
-        */
     }
   }
   
